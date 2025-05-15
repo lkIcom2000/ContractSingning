@@ -12,7 +12,8 @@ public class CustomerMapper {
             customer.getName(),
             customer.getBirth(),
             customer.getAdress(),
-            customer.getPhoneNumber()
+            customer.getPhoneNumber(),
+            customer.getCredentials()
         );
     }
 
@@ -21,7 +22,8 @@ public class CustomerMapper {
             dto.getName(),
             dto.getBirth(),
             dto.getAdress(),
-            dto.getPhoneNumber()
+            dto.getPhoneNumber(),
+            dto.getCredentials()
         );
     }
 } 

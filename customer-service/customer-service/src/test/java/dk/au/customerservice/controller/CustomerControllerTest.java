@@ -12,7 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,23 +32,30 @@ class CustomerControllerTest {
     private CustomerController customerController;
     private Customer testCustomer;
     private CustomerDTO testCustomerDTO;
+    private Map<String, String> testCredentials;
 
     @BeforeEach
     void setUp() {
         customerController = new CustomerController(customerService, customerMapper);
 
+        testCredentials = new HashMap<>();
+        testCredentials.put("username", "max.mustermann");
+        testCredentials.put("password", "mysecret");
+
         testCustomer = new Customer(
             "Max Mustermann",
             "2025-05-15",
             "Birk Centerpark 120",
-            "1234567"
+            "1234567",
+            testCredentials
         );
 
         testCustomerDTO = new CustomerDTO(
             "Max Mustermann",
             "2025-05-15",
             "Birk Centerpark 120",
-            "1234567"
+            "1234567",
+            testCredentials
         );
     }
 
@@ -60,6 +69,7 @@ class CustomerControllerTest {
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getName()).isEqualTo(testCustomer.getName());
+        assertThat(response.getBody().getCredentials()).isEqualTo(testCustomer.getCredentials());
         verify(customerService).getCustomerById(1L);
         verify(customerMapper).toDTO(testCustomer);
     }
@@ -86,6 +96,7 @@ class CustomerControllerTest {
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getName()).isEqualTo(testCustomer.getName());
+        assertThat(response.getBody().getCredentials()).isEqualTo(testCustomer.getCredentials());
         verify(customerMapper).toEntity(testCustomerDTO);
         verify(customerService).createCustomer(testCustomer);
         verify(customerMapper).toDTO(testCustomer);

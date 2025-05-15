@@ -9,7 +9,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,15 +25,22 @@ class CustomerServiceTest {
 
     private CustomerService customerService;
     private Customer testCustomer;
+    private Map<String, String> testCredentials;
 
     @BeforeEach
     void setUp() {
         customerService = new CustomerService(customerRepo);
+        
+        testCredentials = new HashMap<>();
+        testCredentials.put("username", "max.mustermann");
+        testCredentials.put("password", "mysecret");
+
         testCustomer = new Customer(
             "Max Mustermann",
             "2025-05-15",
             "Birk Centerpark 120",
-            "1234567"
+            "1234567",
+            testCredentials
         );
     }
 
@@ -43,6 +52,7 @@ class CustomerServiceTest {
 
         assertThat(customers).hasSize(1);
         assertThat(customers.get(0).getName()).isEqualTo(testCustomer.getName());
+        assertThat(customers.get(0).getCredentials()).isEqualTo(testCustomer.getCredentials());
     }
 
     @Test
@@ -53,6 +63,7 @@ class CustomerServiceTest {
 
         assertThat(found).isPresent();
         assertThat(found.get().getName()).isEqualTo(testCustomer.getName());
+        assertThat(found.get().getCredentials()).isEqualTo(testCustomer.getCredentials());
     }
 
     @Test
@@ -71,6 +82,7 @@ class CustomerServiceTest {
         Customer created = customerService.createCustomer(testCustomer);
 
         assertThat(created.getName()).isEqualTo(testCustomer.getName());
+        assertThat(created.getCredentials()).isEqualTo(testCustomer.getCredentials());
         verify(customerRepo).save(testCustomer);
     }
 
