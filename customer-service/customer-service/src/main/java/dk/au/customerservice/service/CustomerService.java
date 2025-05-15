@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -27,5 +28,13 @@ public class CustomerService {
 
     public void deleteCustomer(Long id) {
         customerRepo.deleteById(id);
+    }
+
+    public Optional<Customer> updateCustomerCredentials(Long id, Map<String, String> newCredentials) {
+        return customerRepo.findById(id)
+                .map(customer -> {
+                    customer.setCredentials(newCredentials);
+                    return customerRepo.save(customer);
+                });
     }
 } 
