@@ -18,4 +18,4 @@ try:
     print("Fair service Headers: ", response.headers)
     print("Fair service Body: ", response.text)
 except Exception as e:
-    print(f"Error with fair service: {e}")
+    print(f"Error with fair service: {e}") 
