@@ -1,4 +1,4 @@
-package dk.au.exhibitionservice.dto;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,4 +15,5 @@ public class ExhibitionDTO {
     private LocalDate date;
     private String category;
     private List<Long> customerIds;
+    private Stand[] stands;
 } 
