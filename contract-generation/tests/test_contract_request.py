@@ -19,4 +19,4 @@ try:
     print("Contract generation service Body: ", response.text)
     
 except Exception as e:
-    print(f"Error with contract generation service: {e}")
+    print(f"Error with contract generation service: {e}") 
