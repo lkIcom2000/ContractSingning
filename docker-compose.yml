@@ -41,6 +41,30 @@ services:
       retries: 3
       start_period: 40s
 
+  mail-service:
+    build:
+      context: ./mail-service
+      dockerfile: Dockerfile
+    container_name: mail-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SIMULATION_MODE=false
+      - SMTP_SERVER=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USE_TLS=true
+      - SMTP_USERNAME=your-email@gmail.com
+      - SMTP_PASSWORD=your-app-password
+      - DEFAULT_FROM_EMAIL=noreply@contractsigning.com
+    networks:
+      - contract-signing-network
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8083/api/mail/health')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   db:
     image: postgres:latest
     container_name: customer-db
