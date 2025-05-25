@@ -41,6 +41,29 @@ services:
       retries: 3
       start_period: 40s
 
+  exhibition-service:
+    build:
+      context: ./Exhibition-service
+      dockerfile: Dockerfile
+    container_name: exhibition-service
+    ports:
+      - "8084:8080"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://exhibition-db:5432/exhibitionDB"
+      SPRING_DATASOURCE_USERNAME: "exhibition_user"
+      SPRING_DATASOURCE_PASSWORD: "exhibition_password"
+    depends_on:
+      exhibition-db:
+        condition: service_healthy
+    networks:
+      - contract-signing-network
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/localhost/8084' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   mail-service:
     build:
       context: ./mail-service
@@ -78,6 +101,22 @@ services:
       POSTGRES_DB: userDB
     ports:
       - "5432:5432"
+    networks:
+      - contract-signing-network
+
+  exhibition-db:
+    image: postgres:latest
+    container_name: exhibition-db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U exhibition_user -d exhibitionDB" ]
+      interval: 10s
+      retries: 3
+    environment:
+      POSTGRES_USER: exhibition_user
+      POSTGRES_PASSWORD: exhibition_password
+      POSTGRES_DB: exhibitionDB
+    ports:
+      - "5433:5432"
     networks:
       - contract-signing-network
 
