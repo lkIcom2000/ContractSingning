@@ -19,7 +19,7 @@ class ResponseMessage(BaseModel):
     message: str
     error_code: int | None = None
 
-@app.post("/fair", response_model=ResponseMessage)
+@app.post("api/fairs", response_model=ResponseMessage)
 def process_fair_data(data: FairData):
     print(f"Received data: {data}")
     
