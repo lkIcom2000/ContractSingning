@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  customer-service:
+    build: ./customer-service/customer-service
+    container_name: customer-service
+    ports:
+      - "8081:8080"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/userDB"
+      SPRING_DATASOURCE_USERNAME: "user"
+      SPRING_DATASOURCE_PASSWORD: "password"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - contract-signing-network
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/localhost/8080' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  credential-generation:
+    build:
+      context: ./credential-generation
+      dockerfile: Dockerfile
+    container_name: credential-generation
+    ports:
+      - "8082:8082"
+    networks:
+      - contract-signing-network
+    depends_on:
+      customer-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10s bash -c ':> /dev/tcp/localhost/8082' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: postgres:latest
+    container_name: customer-db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d userDB" ]
+      interval: 10s
+      retries: 3
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: userDB
+    ports:
+      - "5432:5432"
+    networks:
+      - contract-signing-network
+
+networks:
+  contract-signing-network:
+    driver: bridge 
