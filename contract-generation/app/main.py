@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Body, Response
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
-import app.pdf_contract  
+from app.pdf_contract import create_contract_pdf
 import uvicorn
 import os
 import requests
@@ -16,62 +16,75 @@ class CompanyInfo(BaseModel):
     fair_id: int = Field(..., description="Fair ID")
     square_meters: int = Field(..., description="Number of square meters")
     company_id: str = Field(..., description="Company ID")
-
+    hall_id: int = Field(..., description="Hall ID")
+    
 class ContractResponse(BaseModel):
     filename: str
     file_path: str
     message: str
 
-@app.post(
-    "api/contracts", 
+class ErrorResponse(BaseModel):
+    message: str
+
+@app.post("/api/contracts", 
     response_model=ContractResponse,
     summary="Generate a company contract PDF",
     description="Creates a PDF contract based on the provided company information"
 )
 def create_contract(company_info: CompanyInfo):
-    # Generate unique filename based on company name
-    # safe_name = "".join(c if c.isalnum() else "_" for c in company_info.company_name)
-    # filename = f"contract_{safe_name}.pdf"
-    
-    #Call fair service to check availability of the fair
-    fair_id = company_info.fair_id
-    fair_url = "http://localhost:8000/fair"
-    
-    body = {
-        "fair_id": fair_id,
-        "square_meters": company_info.square_meters,
-        "company_id": company_info.company_id
-    }
-    
-    fair_response = requests.get(fair_url, data=body)
-    
-    if fair_response.status_code == 200:
-       #Call customer service to get customer information
-       customer_url = "http://localhost:8000/customer"
-       customer_body = {
-           "company_id": company_info.company_id
-       }
-       customer_response = requests.get(customer_url, data=customer_body)
-
-       if customer_response.status_code == 200:
-           print("ok")
-           #Create contract PDF
-           ("Print contract")
-           #Create credentials
-           
-           #Create email
-    else:
-        message = fair_response.json()["message"]
+    try:
+        #Call fair service to check availability of the fair
+        fair_id = company_info.fair_id
+        square_meters = company_info.square_meters
+        hall_id = company_info.hall_id
+        fair_url = "http://fair-service:8000/api/fairs"
         
+        body = {
+            "fair_id": fair_id,
+            "square_meters": square_meters,
+            "hall_id": hall_id
+        }
+    
+        fair_response = requests.post(fair_url, json=body)
+        print(f"Fair response: {fair_response.text}")
+        if fair_response.status_code == 200:
+            print("Fair is available")
+            #Call customer service
+            customer_url = "http://customer-service:8000/api/customers"    
+            customer_body = {
+                "customer_id": company_info.company_id
+            }
+            customer_result = requests.get(customer_url, data=customer_body)
+            print(f"Customer result: {customer_result.text}")
+            # #Generate contract
+            filename = f"fair_contract.pdf"
+            
+            # create_contract_pdf(
+            #     company_info.company_name, 
+            #     company_info.registration_id, 
+            #     company_info.address,
+            #     output_filename=filename
+            # )
+            return ContractResponse(
+                filename=filename,
+                file_path=os.path.abspath(filename),
+                message="Contract generated successfully"
+            )
+            
+        else:
+            message = fair_response.json()["message"]
+            return ErrorResponse(
+                message=message
+            )
+
+    except Exception as e:
         return ContractResponse(
             filename="",
             file_path="",
-            message=message
+            message=str(e)
         )
        
-       
-    
-    print(f"Fair response: {fair_response}")
+
     
     # Create the PDF contract
     # pdf_contract.create_contract_pdf(
